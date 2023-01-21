@@ -4,6 +4,7 @@ INPUT_DATA_FILENAME = 'sampledatafoodinfo.csv'
 CLEAN_DATA_FILENAME = 'cleandata.csv'
 EXTENDED_DATA_FILENAME = 'extendeddata.csv'
 LOW_CARB_FOODS_FILENAME = 'lowcarbfoods.csv'
+LOW_CARB_FOODS_VS_CATEGORY_FILENAME = 'lowcarbfoodsvscategory.csv'
 
 
 def load_and_parse_data(filename: str) -> pd.DataFrame:
@@ -31,7 +32,7 @@ def get_carb_calorie_content(data: pd.DataFrame, index: int) -> float:
     return carb_calorie_content
 
 
-def get_extended_dataframe(data: pd.DataFrame) -> pd.DataFrame:
+def get_extended_data(data: pd.DataFrame) -> pd.DataFrame:
     """Creates a dataframe with 'Carb Calorie Content' column"""
     row_count = len(data.index)
     carb_calorie_content_column = [get_carb_calorie_content(data, x) for x in range(row_count)]
@@ -39,9 +40,15 @@ def get_extended_dataframe(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def get_low_carb_foods_dataframe(data: pd.DataFrame, threshold: float):
+def get_low_carb_foods_data(data: pd.DataFrame, threshold: float):
     result = data[data['Carb Calorie Content'] <= threshold]
     return result
+
+
+def get_low_carb_category_count(data: pd.DataFrame):
+    low_carb_food_counts = data.groupby('Category', as_index=False).size()
+
+    return low_carb_food_counts
 
 
 if __name__ == '__main__':
@@ -49,10 +56,14 @@ if __name__ == '__main__':
     clean_data = clean_up_data(raw_data)
     clean_data.to_csv(CLEAN_DATA_FILENAME, index=False)
 
-    extended_data = get_extended_dataframe(clean_data)
+    extended_data = get_extended_data(clean_data)
     extended_data.to_csv(EXTENDED_DATA_FILENAME, index=False)
 
-    low_carb_foods = get_low_carb_foods_dataframe(extended_data, .5)
+    low_carb_foods = get_low_carb_foods_data(extended_data, .5)
     low_carb_foods.to_csv(LOW_CARB_FOODS_FILENAME, index=False)
+
+    low_carb_foods_vs_category = get_low_carb_category_count(low_carb_foods)
+    low_carb_foods_vs_category.to_csv(LOW_CARB_FOODS_VS_CATEGORY_FILENAME, index=False)
+
 
 
